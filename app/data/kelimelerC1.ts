@@ -138,9 +138,8 @@ export const kelimelerC1: Record<string, { english: string; correctTr: string; w
       { english: "sometime", correctTr: "sabık (eski)", wrongTr: "gelecek" },
       { english: "subsequently", correctTr: "sonra", wrongTr: "önce" },
       { english: "temporary", correctTr: "geçici", wrongTr: "kalıcı" },
-      { english: "term", correctTr: "dönem", wrongTr: "an" },
-      { english: "thereafter", "ondan sonra", "öncesinde" },
       { english: "timing", correctTr: "zamanlama", wrongTr: "zamanı kaçırma" },
+      { english: "thereafter", correctTr: "ondan sonra", wrongTr: "öncesinde" },
       { english: "upcoming", correctTr: "olmak üzere olan", wrongTr: "geçmişte kalan" }
     ],
     "Unit 3": [
