@@ -51,7 +51,7 @@ const avatarListesi = [
   { id: "baykus", emoji: "🦉", ad: "Bilge Baykuş", gerekenPuan: 0 },
   { id: "kedi", emoji: "🐱", ad: "Meraklı Kedi", gerekenPuan: 500 },
   { id: "kopek", emoji: "🐶", ad: "Çalışkan Köpek", gerekenPuan: 1500 },
-  { id: "panda", emoji: "🐼", ad: "Sevimli Panda", golongan: 0, gerekenPuan: 3500 },
+  { id: "panda", emoji: "🐼", ad: "Sevimli Panda", gerekenPuan: 3500 },
   { id: "tilki", emoji: "🦊", ad: "Kurnaz Tilki", gerekenPuan: 7500 },
   { id: "aslan", emoji: "🦁", ad: "Cesur Aslan", gerekenPuan: 15000 },
   { id: "tiger", emoji: "🐯", ad: "Kaplan", gerekenPuan: 30000 },
@@ -59,13 +59,13 @@ const avatarListesi = [
   { id: "uzayli", emoji: "👽", ad: "Uzaylı", gerekenPuan: 120000 },
   { id: "astronot", emoji: "👨‍🚀", ad: "Astronot", gerekenPuan: 250000 },
   { id: "ninja", emoji: "🥷", ad: "Ninja", gerekenPuan: 500000 },
-  { id: "superkahraman", emoji: "🦸‍♂️", ad: "Süper Kahraman", gerekenPuan: 1000000 }, // 1 Milyon
+  { id: "superkahraman", emoji: "🦸‍♂️", ad: "Süper Kahraman", gerekenPuan: 1000000 },
   { id: "sihirbaz", emoji: "🧙‍♂️", ad: "Sihirbaz", gerekenPuan: 2500000 },
   { id: "korsan", emoji: "🏴‍☠️", ad: "Korsan", gerekenPuan: 6000000 },
   { id: "ejderha", emoji: "🐉", ad: "Ejderha", gerekenPuan: 15000000 },
   { id: "kral", emoji: "👑", ad: "Kelime Kralı", gerekenPuan: 40000000 },
-  { id: "unicorn", emoji: "🦄", ad: "Efsanevi Unicorn", gerekenPuan: 100000000 }, // 100 Milyon
-  { id: "anka", emoji: "🔥", ad: "Anka Kuşu", gerekenPuan: 300000000 },     // 300 Milyon
+  { id: "unicorn", emoji: "🦄", ad: "Efsanevi Unicorn", gerekenPuan: 100000000 },
+  { id: "anka", emoji: "🔥", ad: "Anka Kuşu", gerekenPuan: 300000000 },
 ];
 
 const oyunIpuclari = [
@@ -146,6 +146,29 @@ export default function Home() {
   const [lives, setLives] = useState(3);
   const [randomTip, setRandomTip] = useState("");
 
+  // --- DÜZENLEME 3: SAYFA YENİLENDİĞİNDE OTURUMUN DÜŞMEMESİ İÇİN ---
+  useEffect(() => {
+    const savedUser = localStorage.getItem("wordimo_user");
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        setScreen("home");
+      } catch (e) {
+        localStorage.removeItem("wordimo_user");
+      }
+    }
+  }, []);
+
+  // --- DÜZENLEME 1 İÇİN YARDIMCI: ÇIKIŞ YAP FONKSİYONU ---
+  const handleLogout = () => {
+    playClickSound();
+    localStorage.removeItem("wordimo_user");
+    setUser(null);
+    setScreen("auth");
+    setIsRegisterModalOpen(false);
+  };
+
   const speakWord = (text: string) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel(); 
@@ -204,7 +227,12 @@ export default function Home() {
       };
 
       await setDoc(docRef, newUser);
-      setUser({ username: regNickname, isGuest: false, dbId: regUsername.toLowerCase(), data: newUser });
+      
+      // Kayıt başarılı olduğunda LocalStorage'a da kaydet
+      const newUserObj = { username: regNickname, isGuest: false, dbId: regUsername.toLowerCase(), data: newUser };
+      setUser(newUserObj);
+      localStorage.setItem("wordimo_user", JSON.stringify(newUserObj));
+      
       setIsRegisterModalOpen(false);
       setScreen("home");
     } catch (error) {
@@ -262,7 +290,11 @@ export default function Home() {
       data.gunlukSeri = newSeri;
       data.sezonPuanlari = sezonPuanlari;
 
-      setUser({ username: data.oyunAdi, isGuest: false, dbId: usernameInput.toLowerCase(), data });
+      // Giriş başarılı olduğunda LocalStorage'a da kaydet
+      const loginUserObj = { username: data.oyunAdi, isGuest: false, dbId: usernameInput.toLowerCase(), data };
+      setUser(loginUserObj);
+      localStorage.setItem("wordimo_user", JSON.stringify(loginUserObj));
+      
       setScreen("home");
     } catch (error) {
       alert("Giriş başarısız.");
@@ -271,7 +303,8 @@ export default function Home() {
 
   const handleGuestLogin = () => {
     playClickSound();
-    setUser({ 
+    // Misafir girişini LocalStorage'a da kaydet
+    const guestDataObj = { 
       username: "Misafir Öğrenci", 
       isGuest: true, 
       data: { 
@@ -280,7 +313,9 @@ export default function Home() {
         sezonPuanlari: { İLKOKUL: 0, ORTAOKUL: 0, LİSE: 0, GENEL: 0 }, 
         kademe: "ORTAOKUL" 
       } 
-    });
+    };
+    setUser(guestDataObj);
+    localStorage.setItem("wordimo_user", JSON.stringify(guestDataObj));
     setScreen("home");
   };
 
@@ -289,13 +324,17 @@ export default function Home() {
     const toplamPuan = user?.data?.toplamPuan || 0;
     
     if (toplamPuan >= avatar.gerekenPuan) {
+      let updatedUser = { ...user, data: { ...user!.data, secilenAvatar: avatar.id } } as any;
+
       if (user && !user.isGuest && user.dbId) {
         const docRef = doc(db, "users", user.dbId);
         await updateDoc(docRef, { secilenAvatar: avatar.id });
-        setUser({ ...user, data: { ...user.data, secilenAvatar: avatar.id } });
-      } else if (user && user.isGuest) {
-        setUser({ ...user, data: { ...user.data, secilenAvatar: avatar.id } });
       }
+      
+      // Avatar güncellendiğinde LocalStorage'ı da güncelle
+      setUser(updatedUser);
+      localStorage.setItem("wordimo_user", JSON.stringify(updatedUser));
+      
       alert(`Harika! Avatarın "${avatar.ad}" olarak değiştirildi.`);
       setScreen("home");
     } else {
@@ -360,7 +399,6 @@ export default function Home() {
     let questionsPool: any[] = [];
 
     if (selectedTopic === "KARIŞIK") {
-      // Tüm ünitedeki/seviyedeki kelimeleri birleştir
       Object.values(sourceData).forEach((unitArray) => {
         if (Array.isArray(unitArray)) {
           questionsPool.push(...unitArray);
@@ -370,7 +408,6 @@ export default function Home() {
       questionsPool = sourceData[selectedTopic];
     }
 
-    // Eğer veri bulunamazsa yedek soruları kullan
     if (questionsPool.length === 0) {
       questionsPool = [
         { english: "prefer", correctTr: "tercih etmek", wrongTr: "nefret etmek" },
@@ -423,7 +460,7 @@ export default function Home() {
             unitePuanlari: yeniUnitePuanlari
           });
 
-          setUser({ 
+          const updatedUser = { 
             ...user, 
             data: { 
               ...mevcutData, 
@@ -431,7 +468,12 @@ export default function Home() {
               sezonPuanlari: sezonPuanlari, 
               unitePuanlari: yeniUnitePuanlari 
             } 
-          });
+          } as any;
+          
+          // Puan kazanıldığında LocalStorage'ı da güncelle
+          setUser(updatedUser);
+          localStorage.setItem("wordimo_user", JSON.stringify(updatedUser));
+          
         } catch (error) {
           console.error("Puan kaydedilemedi", error);
         }
@@ -444,8 +486,6 @@ export default function Home() {
   useEffect(() => {
     if (screen === "loading") {
       setRandomTip(oyunIpuclari[Math.floor(Math.random() * oyunIpuclari.length)]);
-      
-      // Kelime havuzunu yükle
       loadQuestionsForGame();
     }
   }, [screen]);
@@ -545,7 +585,8 @@ export default function Home() {
 
   const TopBar = ({ title }: { title: string }) => (
     <div className="w-full max-w-sm flex items-center justify-center mb-6 relative z-10">
-      <button onClick={goBack} className="absolute left-0 flex flex-col items-center justify-center bg-white/85 hover:bg-white border-2 border-white/60 rounded-2xl w-[60px] h-[52px] shadow-md active:scale-95 transition-all text-slate-600 z-10">
+      {/* DÜZENLEME 4: cursor-pointer eklendi */}
+      <button onClick={goBack} className="absolute left-0 flex flex-col items-center justify-center bg-white/85 hover:bg-white border-2 border-white/60 rounded-2xl w-[60px] h-[52px] shadow-md active:scale-95 transition-all text-slate-600 z-10 cursor-pointer">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mb-[1px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
@@ -575,26 +616,35 @@ export default function Home() {
                 ✨ Kazandığın puanlar arttıkça 18 farklı özel avatarın kilidini açabilirsin!
               </div>
 
-              <input 
-                type="text" 
-                placeholder="Kullanıcı Adı" 
-                value={usernameInput}
-                onChange={(e) => setUsernameInput(e.target.value)}
-                className="w-full bg-white text-slate-700 font-bold px-6 py-4 rounded-2xl mb-4 border-2 border-slate-200 outline-none focus:border-blue-400 transition-colors shadow-sm"
-              />
-              <input 
-                type="password" 
-                placeholder="Şifre" 
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                className="w-full bg-white text-slate-700 font-bold px-6 py-4 rounded-2xl mb-6 border-2 border-slate-200 outline-none focus:border-blue-400 transition-colors shadow-sm"
-              />
-              
-              <button onClick={handleLogin} className="w-full bg-blue-500 text-white rounded-2xl py-4 text-xl font-bold mb-3 shadow-lg shadow-blue-500/30 active:scale-95 transition-all">
-                GİRİŞ YAP
-              </button>
+              {/* DÜZENLEME 2: GİRİŞ YAP FORM İLE SARMALANDI (ENTER TUŞU DESTEĞİ) */}
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleLogin();
+                }}
+                className="w-full flex flex-col items-center"
+              >
+                <input 
+                  type="text" 
+                  placeholder="Kullanıcı Adı" 
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  className="w-full bg-white text-slate-700 font-bold px-6 py-4 rounded-2xl mb-4 border-2 border-slate-200 outline-none focus:border-blue-400 transition-colors shadow-sm"
+                />
+                <input 
+                  type="password" 
+                  placeholder="Şifre" 
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className="w-full bg-white text-slate-700 font-bold px-6 py-4 rounded-2xl mb-6 border-2 border-slate-200 outline-none focus:border-blue-400 transition-colors shadow-sm"
+                />
+                
+                <button type="submit" className="w-full bg-blue-500 text-white rounded-2xl py-4 text-xl font-bold mb-3 shadow-lg shadow-blue-500/30 active:scale-95 transition-all cursor-pointer">
+                  GİRİŞ YAP
+                </button>
+              </form>
 
-              <button onClick={() => { playClickSound(); setIsRegisterModalOpen(true); }} className="w-full bg-green-500 text-white rounded-2xl py-4 text-xl font-bold mb-3 shadow-lg shadow-green-500/30 active:scale-95 transition-all">
+              <button type="button" onClick={() => { playClickSound(); setIsRegisterModalOpen(true); }} className="w-full bg-green-500 text-white rounded-2xl py-4 text-xl font-bold mb-3 shadow-lg shadow-green-500/30 active:scale-95 transition-all cursor-pointer">
                 KAYIT OL
               </button>
               
@@ -604,7 +654,7 @@ export default function Home() {
                 <div className="h-px bg-slate-300 flex-1"></div>
               </div>
 
-              <button onClick={handleGuestLogin} className="w-full bg-slate-700 text-white rounded-2xl py-4 text-lg font-bold shadow-lg shadow-slate-700/30 active:scale-95 transition-all flex items-center justify-center gap-2">
+              <button type="button" onClick={handleGuestLogin} className="w-full bg-slate-700 text-white rounded-2xl py-4 text-lg font-bold shadow-lg shadow-slate-700/30 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
                 <span>🏫</span> Kayıt Olmadan Devam Et
               </button>
             </div>
@@ -616,7 +666,7 @@ export default function Home() {
               <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-sm flex flex-col relative shadow-2xl border border-white">
                 <button 
                   onClick={() => { playClickSound(); setIsRegisterModalOpen(false); }} 
-                  className="absolute top-5 right-6 text-slate-400 hover:text-red-500 font-black text-xl transition-colors"
+                  className="absolute top-5 right-6 text-slate-400 hover:text-red-500 font-black text-xl transition-colors cursor-pointer"
                 >✖</button>
                 <h3 className="text-2xl font-black text-slate-800 mb-2 text-center">Yeni Hesap</h3>
                 <p className="text-slate-500 font-bold text-sm text-center mb-6">Okul kademeni seçerek aramıza katıl!</p>
@@ -649,14 +699,14 @@ export default function Home() {
                       key={k}
                       type="button"
                       onClick={() => setRegKademe(k)}
-                      className={`flex-1 py-2 text-xs font-black rounded-xl border-2 transition-all ${regKademe === k ? "bg-green-500 text-white border-green-500 shadow-sm" : "bg-slate-50 text-slate-500 border-slate-200"}`}
+                      className={`flex-1 py-2 text-xs font-black rounded-xl border-2 transition-all cursor-pointer ${regKademe === k ? "bg-green-500 text-white border-green-500 shadow-sm" : "bg-slate-50 text-slate-500 border-slate-200"}`}
                     >
                       {k}
                     </button>
                   ))}
                 </div>
 
-                <button onClick={handleRegister} className="w-full bg-green-500 text-white rounded-2xl py-4 text-xl font-bold shadow-lg shadow-green-500/30 active:scale-95 transition-all">
+                <button onClick={handleRegister} className="w-full bg-green-500 text-white rounded-2xl py-4 text-xl font-bold shadow-lg shadow-green-500/30 active:scale-95 transition-all cursor-pointer">
                   KAYDINI TAMAMLA
                 </button>
               </div>
@@ -678,9 +728,23 @@ export default function Home() {
               <h3 className="text-base font-black text-slate-800">{user?.username || "Öğrenci"}</h3>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-2xl shadow-sm">
-            <span className="text-xl">🔥</span>
-            <span className="font-black text-orange-600 text-base">{user?.isGuest ? "0" : (user?.data?.gunlukSeri || 1)} Gün</span>
+          
+          <div className="flex items-center gap-2">
+            {/* --- DÜZENLEME 1: Misafir oyuncu için Kayıt Ol butonu, Normal üye için Çıkış Yap butonu --- */}
+            {user?.isGuest ? (
+              <button onClick={() => { handleLogout(); setIsRegisterModalOpen(true); }} className="bg-green-500 text-white px-3 py-1.5 rounded-2xl text-xs font-bold shadow-sm cursor-pointer hover:bg-green-600 active:scale-95 transition-all">
+                Kayıt Ol
+              </button>
+            ) : (
+              <button onClick={handleLogout} className="bg-slate-300 text-slate-700 px-3 py-1.5 rounded-2xl text-xs font-bold shadow-sm cursor-pointer hover:bg-red-500 hover:text-white active:scale-95 transition-all">
+                Çıkış
+              </button>
+            )}
+
+            <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-2xl shadow-sm">
+              <span className="text-xl">🔥</span>
+              <span className="font-black text-orange-600 text-base">{user?.isGuest ? "0" : (user?.data?.gunlukSeri || 1)} Gün</span>
+            </div>
           </div>
         </header>
       )}
@@ -734,7 +798,7 @@ export default function Home() {
                   <button
                     key={tab}
                     onClick={() => { playClickSound(); fetchLeaderboard(tabKeyShort); }}
-                    className={`py-2 text-[10px] font-black rounded-xl transition-all ${activeTab === tab ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+                    className={`py-2 text-[10px] font-black rounded-xl transition-all cursor-pointer ${activeTab === tab ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
                   >
                     {tab === "İLKOKUL" ? "İlkokul" : tab === "ORTAOKUL" ? "Ortaokul" : tab === "LİSE" ? "Lise" : "Genel"}
                   </button>
@@ -766,18 +830,18 @@ export default function Home() {
               <div className="w-full max-w-sm flex flex-col items-center">
                 <h1 className="text-5xl text-[#e11d48] mb-6 drop-shadow-md font-extrabold tracking-tight" style={{ fontFamily: 'cursive, "Comic Sans MS"' }}>Wordimo</h1>
                 
-                <button onClick={() => { playClickSound(); setMainCategory("okul"); }} className="w-full bg-[#3b82f6] text-white rounded-[2rem] py-4 text-xl font-bold mb-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all tracking-wide">
+                <button onClick={() => { playClickSound(); setMainCategory("okul"); }} className="w-full bg-[#3b82f6] text-white rounded-[2rem] py-4 text-xl font-bold mb-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all tracking-wide cursor-pointer">
                   OKUL İNGİLİZCESİ
                 </button>
-                <button onClick={() => { playClickSound(); setMainCategory("genel"); }} className="w-full bg-[#0d9488] text-white rounded-[2rem] py-4 text-xl font-bold mb-3 shadow-lg shadow-teal-500/20 active:scale-95 transition-all tracking-wide">
+                <button onClick={() => { playClickSound(); setMainCategory("genel"); }} className="w-full bg-[#0d9488] text-white rounded-[2rem] py-4 text-xl font-bold mb-3 shadow-lg shadow-teal-500/20 active:scale-95 transition-all tracking-wide cursor-pointer">
                   GENEL İNGİLİZCE
                 </button>
 
                 <div className="w-full grid grid-cols-2 gap-3 mb-3">
-                  <button onClick={() => { playClickSound(); setScreen("avatars"); }} className="bg-[#8b5cf6] text-white rounded-[2rem] py-4 text-base font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all flex flex-col items-center justify-center gap-1">
+                  <button onClick={() => { playClickSound(); setScreen("avatars"); }} className="bg-[#8b5cf6] text-white rounded-[2rem] py-4 text-base font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 cursor-pointer">
                     <span className="text-2xl">😎</span> Avatarlar
                   </button>
-                  <button onClick={openLeaderboard} className="bg-indigo-600 text-white rounded-[2rem] py-4 text-base font-bold shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex flex-col items-center justify-center gap-1">
+                  <button onClick={openLeaderboard} className="bg-indigo-600 text-white rounded-[2rem] py-4 text-base font-bold shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 cursor-pointer">
                     <span className="text-2xl">🏆</span> Sıralama
                   </button>
                 </div>
@@ -789,7 +853,7 @@ export default function Home() {
                     target="_blank" 
                     rel="noopener noreferrer"
                     onClick={() => playClickSound()}
-                    className="bg-emerald-600 text-white rounded-2xl py-3 text-xs font-bold shadow-md active:scale-95 transition-all flex flex-col items-center justify-center gap-1 text-center"
+                    className="bg-emerald-600 text-white rounded-2xl py-3 text-xs font-bold shadow-md active:scale-95 transition-all flex flex-col items-center justify-center gap-1 text-center cursor-pointer"
                   >
                     <span className="text-lg">📥</span> Android İndir
                   </a>
@@ -798,13 +862,13 @@ export default function Home() {
                     target="_blank" 
                     rel="noopener noreferrer"
                     onClick={() => playClickSound()}
-                    className="bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white rounded-2xl py-3 text-xs font-bold shadow-md active:scale-95 transition-all flex flex-col items-center justify-center gap-1 text-center"
+                    className="bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white rounded-2xl py-3 text-xs font-bold shadow-md active:scale-95 transition-all flex flex-col items-center justify-center gap-1 text-center cursor-pointer"
                   >
                     <span className="text-lg">📸</span> Instagram
                   </a>
                   <button 
                     onClick={handleShare}
-                    className="bg-sky-500 text-white rounded-2xl py-3 text-xs font-bold shadow-md active:scale-95 transition-all flex flex-col items-center justify-center gap-1 text-center"
+                    className="bg-sky-500 text-white rounded-2xl py-3 text-xs font-bold shadow-md active:scale-95 transition-all flex flex-col items-center justify-center gap-1 text-center cursor-pointer"
                   >
                     <span className="text-lg">🔗</span> Paylaş
                   </button>
@@ -815,7 +879,7 @@ export default function Home() {
                   target="_blank" 
                   rel="noopener noreferrer"
                   onClick={() => playClickSound()}
-                  className="relative w-full bg-[#ff0000] text-white rounded-[2rem] py-3 flex flex-col items-center justify-center shadow-lg shadow-red-500/30 active:scale-95 transition-all decoration-none overflow-hidden group"
+                  className="relative w-full bg-[#ff0000] text-white rounded-[2rem] py-3 flex flex-col items-center justify-center shadow-lg shadow-red-500/30 active:scale-95 transition-all decoration-none overflow-hidden group cursor-pointer"
                 >
                   <div className="absolute inset-0 bg-white/20 animate-pulse rounded-[2rem]"></div>
                   <div className="relative z-10 flex items-center gap-2 text-lg font-black tracking-wide">
@@ -830,9 +894,9 @@ export default function Home() {
               <div className="w-full max-w-sm flex flex-col items-center">
                 <TopBar title="Okul İngilizcesi" />
                 <div className="w-full flex flex-col gap-4">
-                  <button onClick={() => { playClickSound(); setSelectedStage("İLKOKUL"); }} className="w-full bg-[#8bc34a] text-white rounded-[2rem] py-7 text-2xl font-bold shadow-md active:scale-95 transition-all tracking-wide">İLKOKUL</button>
-                  <button onClick={() => { playClickSound(); setSelectedStage("ORTAOKUL"); }} className="w-full bg-[#2196f3] text-white rounded-[2rem] py-7 text-2xl font-bold shadow-md active:scale-95 transition-all tracking-wide">ORTAOKUL</button>
-                  <button onClick={() => { playClickSound(); setSelectedStage("LİSE"); }} className="w-full bg-[#673ab7] text-white rounded-[2rem] py-7 text-2xl font-bold shadow-md active:scale-95 transition-all tracking-wide">LİSE</button>
+                  <button onClick={() => { playClickSound(); setSelectedStage("İLKOKUL"); }} className="w-full bg-[#8bc34a] text-white rounded-[2rem] py-7 text-2xl font-bold shadow-md active:scale-95 transition-all tracking-wide cursor-pointer">İLKOKUL</button>
+                  <button onClick={() => { playClickSound(); setSelectedStage("ORTAOKUL"); }} className="w-full bg-[#2196f3] text-white rounded-[2rem] py-7 text-2xl font-bold shadow-md active:scale-95 transition-all tracking-wide cursor-pointer">ORTAOKUL</button>
+                  <button onClick={() => { playClickSound(); setSelectedStage("LİSE"); }} className="w-full bg-[#673ab7] text-white rounded-[2rem] py-7 text-2xl font-bold shadow-md active:scale-95 transition-all tracking-wide cursor-pointer">LİSE</button>
                 </div>
               </div>
             )}
@@ -843,7 +907,7 @@ export default function Home() {
                 <TopBar title="Sınıf Seçimi" />
                 <div className="w-full flex flex-col gap-4">
                   {getClassesForStage().map((sinif, index) => (
-                    <button key={sinif} onClick={() => { playClickSound(); setSelectedLevel(sinif); }} className={`w-full ${buttonColors[index % buttonColors.length]} text-white rounded-3xl py-6 text-2xl font-bold shadow-md active:scale-95 transition-all`}>{sinif}</button>
+                    <button key={sinif} onClick={() => { playClickSound(); setSelectedLevel(sinif); }} className={`w-full ${buttonColors[index % buttonColors.length]} text-white rounded-3xl py-6 text-2xl font-bold shadow-md active:scale-95 transition-all cursor-pointer`}>{sinif}</button>
                   ))}
                 </div>
               </div>
@@ -854,13 +918,13 @@ export default function Home() {
               <div className="w-full max-w-sm flex flex-col items-center">
                 <TopBar title="Ünite Seçimi" />
                 <div className="w-full flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1">
-                  <button onClick={() => startTopic("KARIŞIK")} className="w-full bg-[#f59e0b] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all">
+                  <button onClick={() => startTopic("KARIŞIK")} className="w-full bg-[#f59e0b] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all cursor-pointer">
                     <div className="w-12 h-12 bg-white/25 rounded-2xl flex items-center justify-center font-black text-xl mr-4 shrink-0">0</div>
                     <div className="text-left font-bold text-lg leading-tight flex-1">⭐ KARIŞIK ÇALIŞ ⭐</div>
                     <div className="text-white/80 font-bold">▶</div>
                   </button>
                   {okulMufredati[selectedLevel]?.map((uniteIsmi, index) => (
-                    <button key={index} onClick={() => startTopic(`Unit ${index + 1}`)} className="w-full bg-[#f97316] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all">
+                    <button key={index} onClick={() => startTopic(`Unit ${index + 1}`)} className="w-full bg-[#f97316] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all cursor-pointer">
                       <div className="w-12 h-12 bg-white/25 rounded-2xl flex items-center justify-center font-black text-xl mr-4 shrink-0">{index + 1}</div>
                       <div className="text-left font-bold text-lg leading-tight flex-1 pr-2">{uniteIsmi}</div>
                       <div className="text-white/80 font-bold">▶</div>
@@ -878,7 +942,7 @@ export default function Home() {
                 <p className="text-slate-600 mb-6 font-semibold">Seviye Seçimi</p>
                 <div className="w-full flex flex-col gap-4">
                   {["A1 - Beginner", "A2 - Elementary", "B1 - Intermediate"].map((seviye, index) => (
-                    <button key={seviye} onClick={() => { playClickSound(); setSelectedLevel(seviye.split(" ")[0]); }} className={`w-full ${buttonColors[index % buttonColors.length]} text-white rounded-[2rem] py-6 text-2xl font-bold shadow-md active:scale-95 transition-all`}>{seviye}</button>
+                    <button key={seviye} onClick={() => { playClickSound(); setSelectedLevel(seviye.split(" ")[0]); }} className={`w-full ${buttonColors[index % buttonColors.length]} text-white rounded-[2rem] py-6 text-2xl font-bold shadow-md active:scale-95 transition-all cursor-pointer`}>{seviye}</button>
                   ))}
                 </div>
               </div>
@@ -889,13 +953,13 @@ export default function Home() {
               <div className="w-full max-w-sm flex flex-col items-center">
                 <TopBar title="Tema Seçimi" />
                 <div className="w-full flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1">
-                  <button onClick={() => startTopic("KARIŞIK")} className="w-full bg-[#f59e0b] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all">
+                  <button onClick={() => startTopic("KARIŞIK")} className="w-full bg-[#f59e0b] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all cursor-pointer">
                     <div className="w-12 h-12 bg-white/25 rounded-2xl flex items-center justify-center font-black text-xl mr-4 shrink-0">0</div>
                     <div className="text-left font-bold text-lg flex-1">⭐ TÜM KELİMELERİ ÇALIŞ ⭐</div>
                     <div className="text-white/80 font-bold">▶</div>
                   </button>
                   {genelTemalar.map((tema, index) => (
-                    <button key={tema.id} onClick={() => startTopic(tema.id)} className="w-full bg-[#f97316] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all">
+                    <button key={tema.id} onClick={() => startTopic(tema.id)} className="w-full bg-[#f97316] text-white rounded-3xl p-4 flex items-center shadow-md active:scale-95 transition-all cursor-pointer">
                       <div className="w-12 h-12 bg-white/25 rounded-2xl flex items-center justify-center font-black text-xl mr-4 shrink-0">{index + 1}</div>
                       <div className="text-left font-bold text-lg leading-tight flex-1 pr-2">{tema.label}</div>
                       <div className="text-white/80 font-bold">▶</div>
@@ -933,8 +997,8 @@ export default function Home() {
               <p className="text-slate-600 mb-6 font-bold">{selectedTopic === "KARIŞIK" ? "Karışık Mod" : selectedTopic} bitti.</p>
               <p className="text-slate-400 text-xs font-black uppercase tracking-wider mb-1">Bu Oyunun Puanı</p>
               <p className="text-6xl font-black text-orange-500 mb-10">{score}</p>
-              <button onClick={() => { playClickSound(); restartGame(); }} className="w-full bg-green-500 text-white font-bold text-xl py-5 rounded-full mb-3 shadow-lg shadow-green-500/20 active:scale-95 transition-all">Tekrar Oyna</button>
-              <button onClick={goHome} className="w-full bg-slate-200 text-slate-700 font-bold text-xl py-5 rounded-full shadow-sm active:scale-95 transition-all">Menüye Dön</button>
+              <button onClick={() => { playClickSound(); restartGame(); }} className="w-full bg-green-500 text-white font-bold text-xl py-5 rounded-full mb-3 shadow-lg shadow-green-500/20 active:scale-95 transition-all cursor-pointer">Tekrar Oyna</button>
+              <button onClick={goHome} className="w-full bg-slate-200 text-slate-700 font-bold text-xl py-5 rounded-full shadow-sm active:scale-95 transition-all cursor-pointer">Menüye Dön</button>
             </div>
           </main>
         )}
@@ -946,8 +1010,8 @@ export default function Home() {
               <span className="text-7xl mb-6">💔</span>
               <h2 className="text-3xl font-black text-red-600 mb-2">SÜRE / CAN BİTTİ!</h2>
               <p className="text-slate-600 mb-6 font-bold">Üzgünüm, tüm canların tükendi.</p>
-              <button onClick={() => { playClickSound(); restartGame(); }} className="w-full bg-blue-500 text-white font-bold text-xl py-5 rounded-full mb-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all">🔄 Yeniden Dene</button>
-              <button onClick={goHome} className="w-full bg-slate-200 text-slate-700 font-bold text-xl py-5 rounded-full shadow-sm active:scale-95 transition-all">Menüye Dön</button>
+              <button onClick={() => { playClickSound(); restartGame(); }} className="w-full bg-blue-500 text-white font-bold text-xl py-5 rounded-full mb-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all cursor-pointer">🔄 Yeniden Dene</button>
+              <button onClick={goHome} className="w-full bg-slate-200 text-slate-700 font-bold text-xl py-5 rounded-full shadow-sm active:scale-95 transition-all cursor-pointer">Menüye Dön</button>
             </div>
           </main>
         )}
@@ -959,7 +1023,7 @@ export default function Home() {
           return (
             <main className="w-full max-w-md flex flex-col items-center">
               <div className="w-full flex justify-end mb-2">
-                 <button onClick={goHome} className="text-slate-600 font-bold text-sm bg-white/80 px-4 py-2 rounded-full hover:bg-white transition-colors shadow-sm">✖ ÇIKIŞ</button>
+                 <button onClick={goHome} className="text-slate-600 font-bold text-sm bg-white/80 px-4 py-2 rounded-full hover:bg-white transition-colors shadow-sm cursor-pointer">✖ ÇIKIŞ</button>
               </div>
               <div className="w-full bg-white/90 backdrop-blur-md rounded-3xl p-4 flex justify-between items-center mb-3 shadow-md border border-white">
                 <div className="flex flex-col">
@@ -979,7 +1043,7 @@ export default function Home() {
                 <p className="text-slate-400 font-semibold text-sm mb-6 uppercase tracking-wide">Kelimenin anlamı nedir?</p>
                 <div className="flex items-center gap-4">
                   <h2 className="text-5xl font-black text-slate-800 tracking-tight">{q.english}</h2>
-                  <button onClick={() => { playClickSound(); speakWord(q.english); }} className="bg-blue-50 text-blue-500 p-3 rounded-2xl text-2xl shadow-sm hover:bg-blue-100 active:scale-95 transition-all">🔊</button>
+                  <button onClick={() => { playClickSound(); speakWord(q.english); }} className="bg-blue-50 text-blue-500 p-3 rounded-2xl text-2xl shadow-sm hover:bg-blue-100 active:scale-95 transition-all cursor-pointer">🔊</button>
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4">
@@ -990,7 +1054,7 @@ export default function Home() {
                     else if (option === selectedOption) btnClass = "bg-[#ef4444] text-white shadow-lg shadow-red-500/20"; 
                   }
                   return (
-                    <button key={index} onClick={() => handleAnswer(option, q.correctTr)} disabled={isAnswered} className={`w-full py-5 text-2xl font-bold rounded-[2rem] active:scale-95 transition-all ${btnClass}`}>
+                    <button key={index} onClick={() => handleAnswer(option, q.correctTr)} disabled={isAnswered} className={`w-full py-5 text-2xl font-bold rounded-[2rem] active:scale-95 transition-all cursor-pointer ${btnClass}`}>
                       {option}
                     </button>
                   );
