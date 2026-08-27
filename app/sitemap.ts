@@ -8,6 +8,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily',
       priority: 1.0,
     },
-    // İleride açacağımız herkese açık kelime listesi sayfalarını buraya ekleyeceğiz
+    {
+      url: 'https://www.wordimoacademy.com/kelimeler',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: 'https://www.wordimoacademy.com/gizlilik-politikasi',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
   ];
 }
