@@ -601,9 +601,19 @@ export default function Home() {
     </div>
   );
 
-  return (
-    <div className="min-h-screen relative overflow-x-hidden font-sans flex flex-col items-center justify-between p-6">
-      
+    return (
+      <div className="min-h-screen relative overflow-x-hidden font-sans flex flex-col items-center justify-between p-6">
+      <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18413784528"></script>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-18413784528');
+          `,
+        }}
+      />
       {/* HAREKETLİ ARKA PLAN */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-tr from-[#93c5fd] via-[#e0f2fe] to-[#fbcfe8] animate-pulse duration-10000"></div>
       <div className="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-cyan-300/40 rounded-full blur-[120px] pointer-events-none"></div>
