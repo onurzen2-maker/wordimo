@@ -444,45 +444,62 @@ export default function Home() {
       const kaydet = async () => {
         try {
           const docRef = doc(db, "users", user.dbId!);
-          const mevcutData = user.data;
+          const mevcutData = user.data || {};
           
-          const yeniToplamPuan = (mevcutData.toplamPuan || 0) + score; 
+          // 1. Toplam Puanı Güvenli Şekilde Hesapla
+          // (Eğer mevcut puan sayı değilse veya yoksa 0 kabul et)
+          const guncelToplamPuan = Number(mevcutData.toplamPuan) || 0;
+          const yeniToplamPuan = guncelToplamPuan + Number(score); 
 
+          // 2. Hedef Kategori Belirle
           let hedefKategori: "İLKOKUL" | "ORTAOKUL" | "LİSE" | "GENEL" = "ORTAOKUL";
           if (mainCategory === "genel") {
             hedefKategori = "GENEL";
           } else if (mainCategory === "okul" && selectedStage) {
-            hedefKategori = selectedStage; 
+            hedefKategori = selectedStage as "İLKOKUL" | "ORTAOKUL" | "LİSE"; 
           }
 
-          let sezonPuanlari = { ...(mevcutData.sezonPuanlari || { İLKOKUL: 0, ORTAOKUL: 0, LİSE: 0, GENEL: 0 }) };
-          sezonPuanlari[hedefKategori] = (sezonPuanlari[hedefKategori] || 0) + score;
+          // 3. Sezon Puanlarını Güvenli Şekilde Oluştur/Güncelle
+          // (Eğer kullanıcının sezonPuanlari hiç yoksa varsayılanı kullan)
+          const varsayilanSezonPuanlari = { İLKOKUL: 0, ORTAOKUL: 0, LİSE: 0, GENEL: 0 };
+          let sezonPuanlari = { ...varsayilanSezonPuanlari, ...(mevcutData.sezonPuanlari || {}) };
+          
+          // İlgili kategorinin puanını güvenli şekilde artır
+          sezonPuanlari[hedefKategori] = Number(sezonPuanlari[hedefKategori] || 0) + Number(score);
 
+          // 4. Ünite Puanlarını Güvenli Şekilde Oluştur/Güncelle
           const unitKey = `${mainCategory}_${selectedLevel}_${selectedTopic}`;
           let yeniUnitePuanlari = { ...(mevcutData.unitePuanlari || {}) };
-          if (score > (yeniUnitePuanlari[unitKey] || 0)) yeniUnitePuanlari[unitKey] = score;
+          
+          const mevcutUnitePuani = Number(yeniUnitePuanlari[unitKey] || 0);
+          if (Number(score) > mevcutUnitePuani) {
+              yeniUnitePuanlari[unitKey] = Number(score);
+          }
 
+          // 5. Firebase'e Kaydet!
+          // (Burada kesinlikle NaN veya undefined gitmeyecek)
           await updateDoc(docRef, {
             toplamPuan: yeniToplamPuan,
             sezonPuanlari: sezonPuanlari,
             unitePuanlari: yeniUnitePuanlari
           });
-
-          const updatedUser = { 
-            ...user, 
-            data: { 
-              ...mevcutData, 
-              toplamPuan: yeniToplamPuan, 
-              sezonPuanlari: sezonPuanlari, 
-              unitePuanlari: yeniUnitePuanlari 
-            } 
-          } as any;
           
+          // Ekranı güncellemek için local kullanıcı objesini de yenileyelim
+          let updatedUser = { 
+              ...user, 
+              data: { 
+                  ...mevcutData, 
+                  toplamPuan: yeniToplamPuan, 
+                  sezonPuanlari: sezonPuanlari,
+                  unitePuanlari: yeniUnitePuanlari
+              } 
+          } as any;
           setUser(updatedUser);
           localStorage.setItem("wordimo_user", JSON.stringify(updatedUser));
-          
+
         } catch (error) {
-          console.error("Puan kaydedilemedi", error);
+           console.error("Puan kaydetme hatası:", error);
+           // Hata olursa en azından konsolda görebileceğiz!
         }
       };
       kaydet();
