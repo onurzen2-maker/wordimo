@@ -15,14 +15,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Wordimo Akademi — Tüm Sınıflar İçin İngilizce Kelime Öğrenme ve Oyun Platformu",
   description: "Türkiye Yüzyılı Maarif Modeli uyumlu, her sınıf seviyesine ve genel İngilizceye uygun eğlenceli kelime oyunları ve interaktif içeriklerle kelimeleri kalıcı olarak öğrenin.",
+  icons: {
+    icon: "/favicon.ico",
+  },
   openGraph: {
     title: "Wordimo Akademi — Tüm Sınıflar İçin İngilizce Kelime Öğrenme ve Oyun Platformu",
     description: "Türkiye Yüzyılı Maarif Modeli uyumlu, her sınıf seviyesine ve genel İngilizceye uygun eğlenceli kelime oyunları ve interaktif içeriklerle kelimeleri kalıcı olarak öğrenin.",
-    url: 'https://www.wordimoakademi.com',
+    url: 'https://www.wordimoacademy.com',
     siteName: 'Wordimo Akademi',
     images: [
       {
-        url: 'https://www.wordimoakademi.com/og-image.jpg',
+        url: 'https://www.wordimoacademy.com/og-image.jpg',
         width: 1200,
         height: 630,
       },
