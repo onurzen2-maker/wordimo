@@ -440,6 +440,15 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // --- DEDEKTİF KODU BAŞLANGICI ---
+    if (screen === "result") {
+      console.log("Sonuç ekranı açıldı! Kontrol ediliyor...");
+      console.log("Kullanıcı var mı?:", !!user);
+      console.log("Misafir mi?:", user?.isGuest);
+      console.log("dbId var mı?:", user?.dbId);
+      console.log("Tam User Objesi:", user);
+    }
+    // --- DEDEKTİF KODU BİTİŞİ ---
     if (screen === "result" && user && !user.isGuest && user.dbId) {
       const kaydet = async () => {
         try {
