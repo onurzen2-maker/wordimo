@@ -164,8 +164,23 @@ export default function Home() {
     const savedUser = localStorage.getItem("wordimo_user");
     if (savedUser) {
       try {
-        const parsedUser = JSON.parse(savedUser);
+        let parsedUser = JSON.parse(savedUser);
+        
+        // GÜVENLİK ÖNLEMİ: Eğer dbId doğrudan dışarıda yoksa ama data içinde varsa kurtaralım!
+        if (!parsedUser.dbId && parsedUser.data && parsedUser.data.dbId) {
+          parsedUser.dbId = parsedUser.data.dbId;
+        }
+        
+        // EĞER HALA dbId YOKSA AMA username (kullaniciAdi) VARSA KULLANICI ADINI dbId YAPALIM!
+        if (!parsedUser.dbId && parsedUser.username) {
+          // Eğer username büyük harfli veya Türkçe karakterliyse küçük harfe çevirip dbId yapalım
+          parsedUser.dbId = parsedUser.username.toLowerCase().trim();
+        }
+
         setUser(parsedUser);
+        // Güncellenmiş ve dbId garantili objeyi tekrar hafızaya yazalım
+        localStorage.setItem("wordimo_user", JSON.stringify(parsedUser));
+        
         setScreen("home");
       } catch (e) {
         localStorage.removeItem("wordimo_user");
