@@ -19,32 +19,32 @@ import { kelimelerA1 } from "./data/kelimelerA1";
 import { kelimelerA2 } from "./data/kelimelerA2";
 import { kelimelerB1 } from "./data/kelimelerB1";
 
-// --- MÜFREDAT VERİLERİ ---
+// --- MÜFREDAT VERİLERİ (MAARİF MODELİ GÜNCEL) ---
 const okulMufredati: Record<string, string[]> = {
-  "2. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6"],
-  "3. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"],
-  "4. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"],
-  "5. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8"],
-  "6. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"],
-  "7. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"],
-  "8. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"],
-  "9. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8"],
-  "10. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"],
-  "11. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"],
-  "12. Sınıf": ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5", "Unit 6", "Unit 7", "Unit 8", "Unit 9", "Unit 10"]
+  "2. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Homes & Houses & Neighbourhoods", "Life in the City & the World"],
+  "3. Sınıf": ["Greeting", "My Family", "People I Love", "Feelings", "Toys and Games", "My House", "In My City", "Transportation", "Weather", "Nature"],
+  "4. Sınıf": ["Classroom Rules", "Nationality", "Cartoon Characters", "Free Time", "My Day", "Fun with Science", "Jobs", "My Clothes", "My Friends", "Food & Drinks"],
+  "5. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the Neighbourhood & City", "Life in the World 1", "Life in the World 2", "Life in the Universe and Future"],
+  "6. Sınıf": ["Life", "Yummy Breakfast", "Downtown", "Weather and Emotions", "At the Fair", "Occupations", "Holidays", "Bookworms", "Saving the Planet", "Democracy"],
+  "7. Sınıf": ["Appearance & Personality", "Sports", "Biographies", "Wild Animals", "Television", "Celebrations", "Dreams", "Public Buildings", "Environment", "Planets"],
+  "8. Sınıf": ["Friendship", "Teen Life", "In the Kitchen", "On the Phone", "The Internet", "Adventures", "Tourism", "Chores", "Science", "Natural Forces"],
+  "9. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the House & Neighbourhood", "Life in the City & Country", "Life in the World & Nature", "Life in the Universe and Future"],
+  "10. Sınıf": ["School Life", "Plans", "Legendary Figure", "Traditions", "Travel", "Helpful Tips", "Food & Festivals", "Digital Era", "Modern Heroes", "Shopping"],
+  "11. Sınıf": ["Future Jobs", "Hobbies & Skills", "Hard Times", "What a Life", "Back to the Past", "Open Your Heart", "Facts about Turkey", "Sports", "My Friends", "Values"],
+  "12. Sınıf": ["Music", "Friendship", "Human Rights", "Coming Soon", "Psychology", "Favors", "News Stories", "Alternative Energy", "Technology", "Manners"]
 };
 
 const genelTemalar = [
-  { id: "Unit 1", label: "Tema / Ünite 1" },
-  { id: "Unit 2", label: "Tema / Ünite 2" },
-  { id: "Unit 3", label: "Tema / Ünite 3" },
-  { id: "Unit 4", label: "Tema / Ünite 4" },
-  { id: "Unit 5", label: "Tema / Ünite 5" },
-  { id: "Unit 6", label: "Tema / Ünite 6" },
-  { id: "Unit 7", label: "Tema / Ünite 7" },
-  { id: "Unit 8", label: "Tema / Ünite 8" },
-  { id: "Unit 9", label: "Tema / Ünite 9" },
-  { id: "Unit 10", label: "Tema / Ünite 10" }
+  { id: "Unit 1", label: "Tanışma ve Selamlaşma" },
+  { id: "Unit 2", label: "Aile ve Çevre" },
+  { id: "Unit 3", label: "Hayvanlar ve Doğa" },
+  { id: "Unit 4", label: "Renkler ve Sayılar" },
+  { id: "Unit 5", label: "Yiyecek ve İçecekler" },
+  { id: "Unit 6", label: "Günlük Rutinler" },
+  { id: "Unit 7", label: "Meslekler ve İş" },
+  { id: "Unit 8", label: "Yerler ve Yönler" },
+  { id: "Unit 9", label: "Hava Durumu ve Zaman" },
+  { id: "Unit 10", label: "Hobiler ve Sporlar" }
 ];
 
 const avatarListesi = [
@@ -88,7 +88,11 @@ const shuffleArray = (array: any[]) => {
   return shuffled;
 };
 
+// --- GLOBAL SES DEĞİŞKENİ (SINIF MODU İÇİN) ---
+let isGlobalSoundOn = true;
+
 const playSoundEffect = (type: "correct" | "wrong") => {
+  if (!isGlobalSoundOn) return; // Sınıf modu açıksa ses çalmaz
   try {
     const audio = new Audio(type === "correct" ? "/correct.mp3" : "/wrong.mp3");
     audio.play().catch(() => {});
@@ -96,6 +100,7 @@ const playSoundEffect = (type: "correct" | "wrong") => {
 };
 
 const playClickSound = () => {
+  if (!isGlobalSoundOn) return; // Sınıf modu açıksa ses çalmaz
   try {
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContext) return;
@@ -146,7 +151,15 @@ export default function Home() {
   const [lives, setLives] = useState(3);
   const [randomTip, setRandomTip] = useState("");
 
-  // --- DÜZENLEME 3: SAYFA YENİLENDİĞİNDE OTURUMUN DÜŞMEMESİ İÇİN ---
+  // SES AÇ/KAPA STATE'İ
+  const [soundOn, setSoundOn] = useState(true);
+
+  const toggleSound = () => {
+    const newState = !soundOn;
+    setSoundOn(newState);
+    isGlobalSoundOn = newState; // Global değişkeni de güncelliyoruz
+  };
+
   useEffect(() => {
     const savedUser = localStorage.getItem("wordimo_user");
     if (savedUser) {
@@ -160,7 +173,6 @@ export default function Home() {
     }
   }, []);
 
-  // --- DÜZENLEME 1 İÇİN YARDIMCI: ÇIKIŞ YAP FONKSİYONU ---
   const handleLogout = () => {
     playClickSound();
     localStorage.removeItem("wordimo_user");
@@ -170,6 +182,7 @@ export default function Home() {
   };
 
   const speakWord = (text: string) => {
+    if (!isGlobalSoundOn) return; // Öğretmen sesi kapattıysa telaffuz da susar
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel(); 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -228,7 +241,6 @@ export default function Home() {
 
       await setDoc(docRef, newUser);
       
-      // Kayıt başarılı olduğunda LocalStorage'a da kaydet
       const newUserObj = { username: regNickname, isGuest: false, dbId: regUsername.toLowerCase(), data: newUser };
       setUser(newUserObj);
       localStorage.setItem("wordimo_user", JSON.stringify(newUserObj));
@@ -290,7 +302,6 @@ export default function Home() {
       data.gunlukSeri = newSeri;
       data.sezonPuanlari = sezonPuanlari;
 
-      // Giriş başarılı olduğunda LocalStorage'a da kaydet
       const loginUserObj = { username: data.oyunAdi, isGuest: false, dbId: usernameInput.toLowerCase(), data };
       setUser(loginUserObj);
       localStorage.setItem("wordimo_user", JSON.stringify(loginUserObj));
@@ -303,7 +314,6 @@ export default function Home() {
 
   const handleGuestLogin = () => {
     playClickSound();
-    // Misafir girişini LocalStorage'a da kaydet
     const guestDataObj = { 
       username: "Misafir Öğrenci", 
       isGuest: true, 
@@ -331,7 +341,6 @@ export default function Home() {
         await updateDoc(docRef, { secilenAvatar: avatar.id });
       }
       
-      // Avatar güncellendiğinde LocalStorage'ı da güncelle
       setUser(updatedUser);
       localStorage.setItem("wordimo_user", JSON.stringify(updatedUser));
       
@@ -374,7 +383,6 @@ export default function Home() {
     setScreen("leaderboard");
   };
 
-  // --- DİNAMİK KELİME YÜKLEME MOTORU ---
   const loadQuestionsForGame = () => {
     let sourceData: Record<string, { english: string; correctTr: string; wrongTr: string }[]> = {};
 
@@ -470,7 +478,6 @@ export default function Home() {
             } 
           } as any;
           
-          // Puan kazanıldığında LocalStorage'ı da güncelle
           setUser(updatedUser);
           localStorage.setItem("wordimo_user", JSON.stringify(updatedUser));
           
@@ -482,7 +489,6 @@ export default function Home() {
     }
   }, [screen]);
 
-  // --- OYUN MEKANİKLERİ ---
   useEffect(() => {
     if (screen === "loading") {
       setRandomTip(oyunIpuclari[Math.floor(Math.random() * oyunIpuclari.length)]);
@@ -585,7 +591,6 @@ export default function Home() {
 
   const TopBar = ({ title }: { title: string }) => (
     <div className="w-full max-w-sm flex items-center justify-center mb-6 relative z-10">
-      {/* DÜZENLEME 4: cursor-pointer eklendi */}
       <button onClick={goBack} className="absolute left-0 flex flex-col items-center justify-center bg-white/85 hover:bg-white border-2 border-white/60 rounded-2xl w-[60px] h-[52px] shadow-md active:scale-95 transition-all text-slate-600 z-10 cursor-pointer">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mb-[1px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -604,6 +609,15 @@ export default function Home() {
       <div className="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-cyan-300/40 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="fixed bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-orange-300/30 rounded-full blur-[120px] pointer-events-none"></div>
 
+      {/* --- SES AÇ/KAPA BUTONU (SINIF MODU) --- */}
+      <button
+        onClick={toggleSound}
+        className="fixed top-4 right-4 z-50 bg-white/70 backdrop-blur-md p-3 rounded-2xl shadow-sm text-2xl hover:bg-white transition-all cursor-pointer border border-slate-200"
+        title={soundOn ? "Sesi Kapat" : "Sesi Aç"}
+      >
+        {soundOn ? "🔊" : "🔇"}
+      </button>
+
       {/* --- GİRİŞ EKRANI VE KAYIT MODAL'I --- */}
       {screen === "auth" && (
         <>
@@ -616,7 +630,6 @@ export default function Home() {
                 ✨ Kazandığın puanlar arttıkça 18 farklı özel avatarın kilidini açabilirsin!
               </div>
 
-              {/* DÜZENLEME 2: GİRİŞ YAP FORM İLE SARMALANDI (ENTER TUŞU DESTEĞİ) */}
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -660,7 +673,6 @@ export default function Home() {
             </div>
           </main>
 
-          {/* KAYIT OLMA PENCERESİ */}
           {isRegisterModalOpen && (
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
               <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-sm flex flex-col relative shadow-2xl border border-white">
@@ -730,7 +742,6 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-2">
-            {/* --- DÜZENLEME 1: Misafir oyuncu için Kayıt Ol butonu, Normal üye için Çıkış Yap butonu --- */}
             {user?.isGuest ? (
               <button onClick={() => { handleLogout(); setIsRegisterModalOpen(true); }} className="bg-green-500 text-white px-3 py-1.5 rounded-2xl text-xs font-bold shadow-sm cursor-pointer hover:bg-green-600 active:scale-95 transition-all">
                 Kayıt Ol
@@ -846,7 +857,6 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* --- SOSYAL VE İNDİRME BUTONLARI --- */}
                 <div className="w-full grid grid-cols-3 gap-2 mb-3">
                   <a 
                     href="https://play.google.com/store/apps/details?id=com.onurozen.besincisinif" 
@@ -913,7 +923,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* ÜNİTE SEÇİMİ */}
+            {/* ÜNİTE SEÇİMİ (GERÇEK TEMA İSİMLERİ İLE) */}
             {mainCategory === "okul" && selectedLevel && (
               <div className="w-full max-w-sm flex flex-col items-center">
                 <TopBar title="Ünite Seçimi" />
@@ -948,7 +958,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* GENEL TEMA SEÇİMİ */}
+            {/* GENEL TEMA SEÇİMİ (GERÇEK İSİMLERLE) */}
             {mainCategory === "genel" && selectedLevel && (
               <div className="w-full max-w-sm flex flex-col items-center">
                 <TopBar title="Tema Seçimi" />
@@ -1003,13 +1013,17 @@ export default function Home() {
           </main>
         )}
 
-        {/* GAME OVER EKRANI */}
+        {/* GAME OVER EKRANI (PUAN İLAVESİ) */}
         {screen === "gameover" && (
           <main className="w-full flex flex-col items-center justify-center">
             <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-10 flex flex-col items-center text-center max-w-sm w-full shadow-2xl border border-white z-10">
               <span className="text-7xl mb-6">💔</span>
               <h2 className="text-3xl font-black text-red-600 mb-2">SÜRE / CAN BİTTİ!</h2>
-              <p className="text-slate-600 mb-6 font-bold">Üzgünüm, tüm canların tükendi.</p>
+              <p className="text-slate-600 mb-2 font-bold">Üzgünüm, tüm canların tükendi.</p>
+              
+              <p className="text-slate-400 text-xs font-black uppercase tracking-wider mb-1 mt-4">Toplanan Puan</p>
+              <p className="text-5xl font-black text-orange-500 mb-6">{score}</p>
+
               <button onClick={() => { playClickSound(); restartGame(); }} className="w-full bg-blue-500 text-white font-bold text-xl py-5 rounded-full mb-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all cursor-pointer">🔄 Yeniden Dene</button>
               <button onClick={goHome} className="w-full bg-slate-200 text-slate-700 font-bold text-xl py-5 rounded-full shadow-sm active:scale-95 transition-all cursor-pointer">Menüye Dön</button>
             </div>
