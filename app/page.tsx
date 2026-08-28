@@ -392,7 +392,6 @@ export default function Home() {
 
   const openLeaderboard = async () => {
     playClickSound();
-    setScreen("loading");
     const defaultTab = user?.data?.kademe || "ORTAOKUL";
     await fetchLeaderboard(defaultTab);
     setScreen("leaderboard");
@@ -520,67 +519,73 @@ export default function Home() {
   };
 
   const moveToNextQuestion = () => {
-    if (currentIndex < currentQuestions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      // OYUN BİTTİ! Doğrudan burada Firebase'e kaydediyoruz:
-      const finalScore = score;
-      setScreen("result");
+    if (currentIndex < currentQuestions.length - 1) setCurrentIndex((prev) => prev + 1);
+    else setScreen("result");
+  };
 
-      if (user && !user.isGuest && user.dbId) {
-        const kaydet = async () => {
-          try {
-            const docRef = doc(db, "users", user.dbId!);
-            const mevcutData = user.data || {};
-            
-            const guncelToplamPuan = Number(mevcutData.toplamPuan) || 0;
-            const yeniToplamPuan = guncelToplamPuan + Number(finalScore); 
+  // --- OYUN BİTTİĞİNDE (KAZANINCA VEYA CAN BİTİNCE) SKORU KAYDET ---
+  useEffect(() => {
+    if ((screen === "result" || screen === "gameover") && user && !user.isGuest && user.dbId) {
+      const kaydet = async () => {
+        try {
+          const docRef = doc(db, "users", user.dbId!);
+          const mevcutData = user.data || {};
+          
+          const guncelToplamPuan = Number(mevcutData.toplamPuan) || 0;
+          const yeniToplamPuan = guncelToplamPuan + Number(score); 
 
-            let hedefKategori: "İLKOKUL" | "ORTAOKUL" | "LİSE" | "GENEL" = "ORTAOKUL";
-            if (mainCategory === "genel") {
-              hedefKategori = "GENEL";
-            } else if (mainCategory === "okul" && selectedStage) {
-              hedefKategori = selectedStage as "İLKOKUL" | "ORTAOKUL" | "LİSE"; 
-            }
-
-            const varsayilanSezonPuanlari = { İLKOKUL: 0, ORTAOKUL: 0, LİSE: 0, GENEL: 0 };
-            let sezonPuanlari = { ...varsayilanSezonPuanlari, ...(mevcutData.sezonPuanlari || {}) };
-            sezonPuanlari[hedefKategori] = Number(sezonPuanlari[hedefKategori] || 0) + Number(finalScore);
-
-            const unitKey = `${mainCategory}_${selectedLevel}_${selectedTopic}`;
-            let yeniUnitePuanlari = { ...(mevcutData.unitePuanlari || {}) };
-            const mevcutUnitePuani = Number(yeniUnitePuanlari[unitKey] || 0);
-            if (Number(finalScore) > mevcutUnitePuani) {
-                yeniUnitePuanlari[unitKey] = Number(finalScore);
-            }
-
-            await updateDoc(docRef, {
-              toplamPuan: yeniToplamPuan,
-              sezonPuanlari: sezonPuanlari,
-              unitePuanlari: yeniUnitePuanlari
-            });
-            
-            let updatedUser = { 
-                ...user, 
-                data: { 
-                    ...mevcutData, 
-                    toplamPuan: yeniToplamPuan, 
-                    sezonPuanlari: sezonPuanlari,
-                    unitePuanlari: yeniUnitePuanlari
-                } 
-            } as any;
-            setUser(updatedUser);
-            localStorage.setItem("wordimo_user", JSON.stringify(updatedUser));
-            console.log("Puanlar başarıyla kaydedildi!");
-
-          } catch (error) {
-             console.error("Puan kaydetme hatası:", error);
+          // Hangi kategoriye kaydedileceğini bul
+          let hedefKategori: "İLKOKUL" | "ORTAOKUL" | "LİSE" | "GENEL" = "ORTAOKUL";
+          if (mainCategory === "genel") {
+            hedefKategori = "GENEL";
+          } else if (mainCategory === "okul" && selectedStage) {
+            hedefKategori = selectedStage as "İLKOKUL" | "ORTAOKUL" | "LİSE"; 
           }
-        };
+
+          // Sezon puanlarını güncelle
+          const varsayilanSezonPuanlari = { İLKOKUL: 0, ORTAOKUL: 0, LİSE: 0, GENEL: 0 };
+          let sezonPuanlari = { ...varsayilanSezonPuanlari, ...(mevcutData.sezonPuanlari || {}) };
+          sezonPuanlari[hedefKategori] = Number(sezonPuanlari[hedefKategori] || 0) + Number(score);
+
+          // Ünite bazlı yüksek skoru güncelle
+          const unitKey = `${mainCategory}_${selectedLevel}_${selectedTopic}`;
+          let yeniUnitePuanlari = { ...(mevcutData.unitePuanlari || {}) };
+          const mevcutUnitePuani = Number(yeniUnitePuanlari[unitKey] || 0);
+          if (Number(score) > mevcutUnitePuani) {
+              yeniUnitePuanlari[unitKey] = Number(score);
+          }
+
+          // Veritabanına Yaz
+          await updateDoc(docRef, {
+            toplamPuan: yeniToplamPuan,
+            sezonPuanlari: sezonPuanlari,
+            unitePuanlari: yeniUnitePuanlari
+          });
+          
+          // Ekranda hemen güncellenmesi için Local State'i yenile
+          let updatedUser = { 
+              ...user, 
+              data: { 
+                  ...mevcutData, 
+                  toplamPuan: yeniToplamPuan, 
+                  sezonPuanlari: sezonPuanlari,
+                  unitePuanlari: yeniUnitePuanlari
+              } 
+          } as any;
+          setUser(updatedUser);
+          localStorage.setItem("wordimo_user", JSON.stringify(updatedUser));
+
+        } catch (error) {
+           console.error("Puan kaydetme hatası:", error);
+        }
+      };
+      
+      // Sadece toplanan skor 0'dan büyükse veritabanını yoralım
+      if (score > 0) {
         kaydet();
       }
     }
-  };
+  }, [screen]);
 
   const restartGame = () => setScreen("loading");
 
