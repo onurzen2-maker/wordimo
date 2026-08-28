@@ -3,19 +3,19 @@ import { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: 'https://www.wordimoacademy.com',
+      url: 'https://wordimoacademy.com',
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1.0,
     },
     {
-      url: 'https://www.wordimoacademy.com/kelimeler',
+      url: 'https://wordimoacademy.com/kelimeler',
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: 'https://www.wordimoacademy.com/gizlilik-politikasi',
+      url: 'https://wordimoacademy.com/gizlilik-politikasi',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
