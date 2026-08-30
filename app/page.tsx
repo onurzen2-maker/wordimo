@@ -24,19 +24,18 @@ import { kelimelerC1 } from "./data/kelimelerC1";
 // --- MÜFREDAT VERİLERİ (MAARİF MODELİ GÜNCEL) ---
 const okulMufredati: Record<string, string[]> = {
   "2. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Homes & Houses & Neighbourhoods", "Life in the City & the World"],
-  "3. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Homes & Houses & Neighbourhoods", "Life in the City & the World"], // 2. Sınıf ile eşitlendi (Maarif)
+  "3. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Homes & Houses & Neighbourhoods", "Life in the City & the World"], 
   "4. Sınıf": ["Classroom Rules", "Nationality", "Cartoon Characters", "Free Time", "My Day", "Fun with Science", "Jobs", "My Clothes", "My Friends", "Food & Drinks"],
   "5. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the Neighbourhood & City", "Life in the World 1", "Life in the World 2", "Life in the Universe and Future"],
-  "6. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the Neighbourhood & City", "Life in the World 1", "Life in the World 2", "Life in the Universe and Future"], // 5. Sınıf ile eşitlendi (Maarif)
+  "6. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the Neighbourhood & City", "Life in the World 1", "Life in the World 2", "Life in the Universe and Future"], 
   "7. Sınıf": ["Appearance & Personality", "Sports", "Biographies", "Wild Animals", "Television", "Celebrations", "Dreams", "Public Buildings", "Environment", "Planets"],
   "8. Sınıf": ["Friendship", "Teen Life", "In the Kitchen", "On the Phone", "The Internet", "Adventures", "Tourism", "Chores", "Science", "Natural Forces"],
   "9. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the House & Neighbourhood", "Life in the City & Country", "Life in the World & Nature", "Life in the Universe and Future"],
-  "10. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the House & Neighbourhood", "Life in the City & Country", "Life in the World & Nature", "Life in the Universe and Future"], // 9. Sınıf ile eşitlendi (Maarif)
+  "10. Sınıf": ["School Life", "Classroom Life", "Personal Life", "Family Life", "Life in the House & Neighbourhood", "Life in the City & Country", "Life in the World & Nature", "Life in the Universe and Future"], 
   "11. Sınıf": ["Future Jobs", "Hobbies & Skills", "Hard Times", "What a Life", "Back to the Past", "Open Your Heart", "Facts about Turkey", "Sports", "My Friends", "Values"],
   "12. Sınıf": ["Music", "Friendship", "Human Rights", "Coming Soon", "Psychology", "Favors", "News Stories", "Alternative Energy", "Technology", "Manners"]
 };
 
-// DOĞRU GENEL İNGİLİZCE KONULARI
 const genelTemalar = [
   { id: "Unit 1", label: "Aile, İnsanlar ve Meslekler" },
   { id: "Unit 2", label: "Zaman, Günler ve Aylar" },
@@ -84,7 +83,6 @@ const oyunIpuclari = [
   "Yanlış cevap verdiğinde canın azalır ve combo sıfırlanır!"
 ];
 
-// --- RENK PALETLERİ (Kartlar İçin) ---
 const cardColors = [
   { bg: "bg-blue-50", border: "border-blue-200", borderBottom: "border-b-blue-300", text: "text-blue-700", iconBg: "bg-blue-200", iconText: "text-blue-700" },
   { bg: "bg-emerald-50", border: "border-emerald-200", borderBottom: "border-b-emerald-300", text: "text-emerald-700", iconBg: "bg-emerald-200", iconText: "text-emerald-700" },
@@ -102,7 +100,6 @@ const shuffleArray = (array: any[]) => {
   return shuffled;
 };
 
-// --- GLOBAL SES DEĞİŞKENİ (SINIF MODU İÇİN) ---
 let isGlobalSoundOn = true;
 
 const playSoundEffect = (type: "correct" | "wrong") => {
@@ -169,6 +166,9 @@ export default function Home() {
 
   const [soundOn, setSoundOn] = useState(true);
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  
+  // --- MOBİL MENÜ KONTROLÜ İÇİN STATE ---
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleSound = () => {
     const newState = !soundOn;
@@ -212,10 +212,10 @@ export default function Home() {
         setScreen("home");
       } catch (e) {
         localStorage.removeItem("wordimo_user");
-        handleGuestLogin(true); // Otomatik misafir girişi
+        handleGuestLogin(true);
       }
     } else {
-      handleGuestLogin(true); // Veri yoksa otomatik misafir girişi
+      handleGuestLogin(true);
     }
   }, []);
 
@@ -223,7 +223,7 @@ export default function Home() {
     playClickSound();
     localStorage.removeItem("wordimo_user");
     setIsAvatarMenuOpen(false);
-    handleGuestLogin(false); // Çıkış yapınca tekrar misafir moduna düş
+    handleGuestLogin(false);
   };
 
   const speakWord = (text: string) => {
@@ -346,7 +346,7 @@ export default function Home() {
       setUser(loginUserObj);
       localStorage.setItem("wordimo_user", JSON.stringify(loginUserObj));
       
-      setIsLoginModalOpen(false); // Modal'ı kapat
+      setIsLoginModalOpen(false);
       setScreen("home");
     } catch (error) {
       alert("Giriş başarısız.");
@@ -404,6 +404,7 @@ export default function Home() {
     const defaultTab = activeTab || "ORTAOKUL";
     await fetchLeaderboard(defaultTab);
     setMainCategory("siralama");
+    setIsMobileMenuOpen(false); // Mobilde menüyü kapat
   };
 
   const loadQuestionsForGame = () => {
@@ -460,10 +461,9 @@ export default function Home() {
   const startTopic = (topic: string) => {
     playClickSound();
     
-    // --- 3. VE 10. SINIF İÇİN KORUMA KALKANI ---
     if (mainCategory === "okul" && (selectedLevel === "3. Sınıf" || selectedLevel === "10. Sınıf")) {
         alert("⏳ Bu sınıfın kelimeleri yeni Maarif Modeline göre güncelleniyor. Çok yakında eklenecek!");
-        return; // Fonksiyonu durdur, oyuna geçme
+        return; 
     }
 
     setSelectedTopic(topic);
@@ -723,7 +723,7 @@ export default function Home() {
     );
   }
 
-  // --- DASHBOARD (MASAÜSTÜ & YENİ UI) GÖRÜNÜMÜ ---
+  // --- DASHBOARD (MASAÜSTÜ & MOBİL UYUMLU UI) GÖRÜNÜMÜ ---
   return (
     <div className="flex h-screen w-full bg-slate-50 font-sans text-slate-800 overflow-hidden relative">
       
@@ -764,12 +764,19 @@ export default function Home() {
 
       <div className="fixed inset-0 -z-10 bg-gradient-to-tr from-[#93c5fd] via-[#e0f2fe] to-[#fbcfe8] animate-pulse duration-10000 pointer-events-none"></div>
       
-      {/* SOL MENÜ */}
-      <aside className="w-80 bg-white/95 backdrop-blur-sm border-r border-slate-200 flex flex-col shadow-lg z-20">
-        <div className="h-24 flex items-center justify-center border-b border-slate-100 shrink-0">
-          <h1 onClick={() => { setMainCategory("okul"); setScreen("home"); }} className="text-4xl font-black tracking-tight cursor-pointer text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 hover:scale-105 transition-transform">
+      {/* MOBİL ARKA PLAN KARARTMASI */}
+      {isMobileMenuOpen && (
+        <div onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-30 md:hidden"></div>
+      )}
+
+      {/* SOL MENÜ (RESPONSIVE / MOBİL UYUMLU) */}
+      <aside className={`fixed md:static inset-y-0 left-0 w-80 bg-white/95 backdrop-blur-sm border-r border-slate-200 flex flex-col shadow-lg z-40 transition-transform duration-300 transform ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+        <div className="h-24 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
+          <h1 onClick={() => { setMainCategory("okul"); setScreen("home"); setIsMobileMenuOpen(false); }} className="text-4xl font-black tracking-tight cursor-pointer text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 hover:scale-105 transition-transform">
             Wordimo
           </h1>
+          {/* Mobilde Menüyü Kapatma Çarpısı */}
+          <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-slate-400 hover:text-red-500 font-bold text-2xl cursor-pointer">✕</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 flex flex-col custom-scrollbar">
@@ -778,7 +785,7 @@ export default function Home() {
             {/* OKUL İNGİLİZCESİ */}
             <div>
               <button 
-                onClick={() => { playClickSound(); setMainCategory("okul"); setScreen("home"); }}
+                onClick={() => { playClickSound(); setMainCategory("okul"); setScreen("home"); setIsMobileMenuOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${
                   mainCategory === "okul" ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:bg-slate-50"
                 }`}
@@ -804,7 +811,7 @@ export default function Home() {
                             return (
                               <button
                                 key={level}
-                                onClick={() => { playClickSound(); setSelectedLevel(level); setScreen("home"); }}
+                                onClick={() => { playClickSound(); setSelectedLevel(level); setScreen("home"); setIsMobileMenuOpen(false); }}
                                 className={`cursor-pointer w-full flex items-center justify-between px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
                                   selectedLevel === level ? "bg-blue-500 text-white shadow-md" : "text-slate-500 hover:bg-slate-100"
                                 }`}
@@ -829,7 +836,7 @@ export default function Home() {
             {/* GENEL İNGİLİZCE */}
             <div>
               <button 
-                onClick={() => { playClickSound(); setMainCategory("genel"); setScreen("home"); }}
+                onClick={() => { playClickSound(); setMainCategory("genel"); setScreen("home"); setIsMobileMenuOpen(false); }}
                 className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${
                   mainCategory === "genel" ? "bg-teal-50 text-teal-600" : "text-slate-500 hover:bg-slate-50"
                 }`}
@@ -842,7 +849,7 @@ export default function Home() {
                   {["A1", "A2", "B1", "B2", "C1"].map((lvl) => (
                     <button
                       key={lvl}
-                      onClick={() => { playClickSound(); setSelectedLevel(lvl); setScreen("home"); }}
+                      onClick={() => { playClickSound(); setSelectedLevel(lvl); setScreen("home"); setIsMobileMenuOpen(false); }}
                       className={`cursor-pointer w-full text-left px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
                         selectedLevel === lvl ? "bg-teal-500 text-white shadow-md" : "text-slate-500 hover:bg-slate-100"
                       }`}
@@ -890,52 +897,58 @@ export default function Home() {
 
       {/* SAĞ ANA ALAN */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        <header className="h-24 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 z-10 shrink-0">
-          <div>
-            <h2 className="text-2xl font-black text-slate-800 cursor-default">
-              {mainCategory === "okul" && selectedLevel}
-              {mainCategory === "genel" && `Genel İngilizce - ${selectedLevel}`}
-              {mainCategory === "siralama" && "Liderlik Tablosu"}
-            </h2>
-            <p className="text-sm font-semibold text-slate-500 cursor-default">
-              {mainCategory === "siralama" ? "Kategorini seç ve rekabete katıl!" : "Çalışmak istediğin üniteyi seç"}
-            </p>
+        <header className="h-24 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-10 sticky top-0 z-10 shrink-0">
+          <div className="flex items-center gap-3">
+            {/* MOBİL İÇİN HAMBURGER MENÜ BUTONU */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden bg-slate-100 p-2.5 rounded-xl shadow-sm text-xl cursor-pointer border border-slate-200" title="Menüyü Aç">
+              ☰
+            </button>
+            <div>
+              <h2 className="text-xl md:text-2xl font-black text-slate-800 cursor-default truncate max-w-[180px] md:max-w-none">
+                {mainCategory === "okul" && selectedLevel}
+                {mainCategory === "genel" && `Genel İngilizce - ${selectedLevel}`}
+                {mainCategory === "siralama" && "Liderlik Tablosu"}
+              </h2>
+              <p className="text-xs md:text-sm font-semibold text-slate-500 cursor-default hidden sm:block">
+                {mainCategory === "siralama" ? "Kategorini seç ve rekabete katıl!" : "Çalışmak istediğin üniteyi seç"}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <button onClick={toggleSound} className="bg-slate-100 p-2.5 rounded-xl shadow-sm hover:bg-white transition-all cursor-pointer border border-slate-200" title={soundOn ? "Sesi Kapat" : "Sesi Aç"}>
               {soundOn ? "🔊" : "🔇"}
             </button>
 
             {user?.isGuest ? (
               <div className="flex gap-2">
-                <button onClick={() => { playClickSound(); setIsLoginModalOpen(true); }} className="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-2xl text-xs font-bold shadow-sm cursor-pointer hover:bg-blue-50 active:scale-95 transition-all">
-                  Giriş Yap
+                <button onClick={() => { playClickSound(); setIsLoginModalOpen(true); }} className="bg-white border border-blue-200 text-blue-600 px-3 md:px-4 py-2 rounded-2xl text-xs font-bold shadow-sm cursor-pointer hover:bg-blue-50 active:scale-95 transition-all">
+                  Giriş
                 </button>
-                <button onClick={() => { playClickSound(); setIsRegisterModalOpen(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-sm cursor-pointer hover:bg-blue-700 active:scale-95 transition-all">
-                  Kayıt Ol
+                <button onClick={() => { playClickSound(); setIsRegisterModalOpen(true); }} className="bg-blue-600 text-white px-3 md:px-4 py-2 rounded-2xl text-xs font-bold shadow-sm cursor-pointer hover:bg-blue-700 active:scale-95 transition-all">
+                  Kayıt
                 </button>
               </div>
             ) : (
-              <div className="cursor-default flex items-center gap-2 bg-orange-50 border border-orange-200 px-4 py-2 rounded-2xl">
+              <div className="cursor-default hidden sm:flex items-center gap-2 bg-orange-50 border border-orange-200 px-4 py-2 rounded-2xl">
                 <span className="text-xl">🔥</span>
                 <span className="font-black text-orange-600 text-sm">{user?.data?.gunlukSeri || 1} Gün</span>
               </div>
             )}
             
             <div className="relative">
-              <div onClick={() => { playClickSound(); setIsAvatarMenuOpen(!isAvatarMenuOpen); }} className="cursor-pointer flex items-center gap-3 bg-white border border-slate-200 px-3 py-2 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all">
-                <div className="w-10 h-10 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-xl shadow-inner text-white">
+              <div onClick={() => { playClickSound(); setIsAvatarMenuOpen(!isAvatarMenuOpen); }} className="cursor-pointer flex items-center gap-2 md:gap-3 bg-white border border-slate-200 px-2.5 md:px-3 py-2 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-lg md:text-xl shadow-inner text-white">
                   {getAktifAvatarEmoji()}
                 </div>
-                <div className="pr-2">
+                <div className="pr-1 hidden sm:block">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">XP: {user?.data?.toplamPuan || 0}</p>
                   <p className="text-sm font-black text-slate-700 leading-tight">{user?.username || "Öğrenci"}</p>
                 </div>
               </div>
 
               {isAvatarMenuOpen && (
-                <div className="absolute right-0 mt-3 p-4 bg-white rounded-3xl shadow-2xl border border-slate-100 z-50 w-80 max-h-[70vh] overflow-y-auto">
+                <div className="absolute right-0 mt-3 p-4 bg-white rounded-3xl shadow-2xl border border-slate-100 z-50 w-72 md:w-80 max-h-[70vh] overflow-y-auto">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="font-black text-slate-700 cursor-default">Avatar Seçimi</h4>
                     <button onClick={() => setIsAvatarMenuOpen(false)} className="cursor-pointer text-slate-400 hover:text-red-500 font-bold">✕</button>
@@ -973,22 +986,22 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar relative z-0">
+        <div className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative z-0">
           
           {/* ÜNİTELER (Okul veya Genel) */}
           {mainCategory !== "siralama" && (
             <div className="max-w-6xl mx-auto pb-10">
-              <button onClick={() => startTopic("KARIŞIK")} className="cursor-pointer w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-3xl p-6 mb-8 flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1 border-b-4 border-orange-600 transition-all duration-300">
-                <div className="w-16 h-16 bg-white/25 rounded-2xl flex items-center justify-center font-black text-3xl mr-6 shrink-0">⭐</div>
+              <button onClick={() => startTopic("KARIŞIK")} className="cursor-pointer w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-3xl p-5 md:p-6 mb-8 flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1 border-b-4 border-orange-600 transition-all duration-300">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-white/25 rounded-2xl flex items-center justify-center font-black text-2xl md:text-3xl mr-4 md:mr-6 shrink-0">⭐</div>
                 <div className="text-left flex-1">
                   {mainCategory === "genel" ? (
-                    <h3 className="font-black text-2xl mb-1">⭐ {selectedLevel} - TÜM KELİMELERİ ÇALIŞ (KARIŞIK) ⭐</h3>
+                    <h3 className="font-black text-lg md:text-2xl mb-1">⭐ {selectedLevel} - TÜM KELİMELERİ ÇALIŞ (KARIŞIK) ⭐</h3>
                   ) : (
-                    <h3 className="font-black text-2xl mb-1">Tüm Üniteleri Karışık Çalış</h3>
+                    <h3 className="font-black text-xl md:text-2xl mb-1">Tüm Üniteleri Karışık Çalış</h3>
                   )}
-                  <p className="font-semibold text-white/80">Kendini test et ve daha fazla XP kazan!</p>
+                  <p className="font-semibold text-white/80 text-xs md:text-base">Kendini test et ve daha fazla XP kazan!</p>
                 </div>
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">▶</div>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-full flex items-center justify-center text-lg md:text-xl font-bold shrink-0">▶</div>
               </button>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -1023,10 +1036,10 @@ export default function Home() {
           {/* LİDERLİK TABLOSU EKRANI */}
           {mainCategory === "siralama" && (
             <div className="max-w-4xl mx-auto pb-10">
-              <div className="flex justify-center mb-10">
-                <div className="bg-white/60 p-1 rounded-2xl flex gap-1 shadow-sm border border-slate-200">
+              <div className="flex justify-center mb-10 overflow-x-auto py-2">
+                <div className="bg-white/60 p-1 rounded-2xl flex gap-1 shadow-sm border border-slate-200 shrink-0">
                   {(["İLKOKUL", "ORTAOKUL", "LİSE", "GENEL"] as const).map((kategori) => (
-                    <button key={kategori} onClick={() => fetchLeaderboard(kategori)} className={`cursor-pointer px-6 py-2.5 rounded-xl font-black text-sm transition-all duration-200 ${activeTab === kategori ? "bg-amber-500 text-white shadow-md scale-105" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
+                    <button key={kategori} onClick={() => fetchLeaderboard(kategori)} className={`cursor-pointer px-4 md:px-6 py-2.5 rounded-xl font-black text-xs md:text-sm transition-all duration-200 ${activeTab === kategori ? "bg-amber-500 text-white shadow-md scale-105" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
                       {kategori}
                     </button>
                   ))}
@@ -1035,31 +1048,31 @@ export default function Home() {
 
               {leaderboardData.length > 0 ? (
                 <>
-                  <div className="flex justify-center items-end gap-6 mb-12">
+                  <div className="flex justify-center items-end gap-4 md:gap-6 mb-12">
                     {leaderboardData[1] && (
                       <div className="flex flex-col items-center cursor-default">
-                        <div className="text-4xl mb-2">{avatarListesi.find(a => a.id === leaderboardData[1].secilenAvatar)?.emoji || "🦉"}</div>
-                        <div className="w-28 h-32 bg-slate-200 rounded-t-xl flex flex-col items-center justify-start pt-4 border-t-4 border-slate-400 shadow-inner">
-                          <span className="text-2xl font-black text-slate-500">2</span>
-                          <span className="text-xs font-bold mt-2 text-slate-600 truncate w-full px-2 text-center">{leaderboardData[1].oyunAdi}</span>
+                        <div className="text-3xl md:text-4xl mb-2">{avatarListesi.find(a => a.id === leaderboardData[1].secilenAvatar)?.emoji || "🦉"}</div>
+                        <div className="w-24 md:w-28 h-28 md:h-32 bg-slate-200 rounded-t-xl flex flex-col items-center justify-start pt-4 border-t-4 border-slate-400 shadow-inner">
+                          <span className="text-xl md:text-2xl font-black text-slate-500">2</span>
+                          <span className="text-[10px] md:text-xs font-bold mt-2 text-slate-600 truncate w-full px-1 text-center">{leaderboardData[1].oyunAdi}</span>
                         </div>
                       </div>
                     )}
                     {leaderboardData[0] && (
                       <div className="flex flex-col items-center cursor-default">
-                        <div className="text-6xl mb-2 animate-bounce">{avatarListesi.find(a => a.id === leaderboardData[0].secilenAvatar)?.emoji || "🦉"}</div>
-                        <div className="w-32 h-40 bg-amber-100 rounded-t-xl flex flex-col items-center justify-start pt-4 border-t-4 border-amber-400 shadow-lg z-10">
-                          <span className="text-4xl font-black text-amber-500">1</span>
-                          <span className="text-sm font-bold mt-2 text-amber-700 truncate w-full px-2 text-center">{leaderboardData[0].oyunAdi}</span>
+                        <div className="text-5xl md:text-6xl mb-2 animate-bounce">{avatarListesi.find(a => a.id === leaderboardData[0].secilenAvatar)?.emoji || "🦉"}</div>
+                        <div className="w-28 md:w-32 h-36 md:h-40 bg-amber-100 rounded-t-xl flex flex-col items-center justify-start pt-4 border-t-4 border-amber-400 shadow-lg z-10">
+                          <span className="text-3xl md:text-4xl font-black text-amber-500">1</span>
+                          <span className="text-xs md:text-sm font-bold mt-2 text-amber-700 truncate w-full px-1 text-center">{leaderboardData[0].oyunAdi}</span>
                         </div>
                       </div>
                     )}
                     {leaderboardData[2] && (
                       <div className="flex flex-col items-center cursor-default">
-                        <div className="text-4xl mb-2">{avatarListesi.find(a => a.id === leaderboardData[2].secilenAvatar)?.emoji || "🦉"}</div>
-                        <div className="w-28 h-28 bg-orange-50 rounded-t-xl flex flex-col items-center justify-start pt-4 border-t-4 border-orange-400 shadow-inner">
-                          <span className="text-2xl font-black text-orange-400">3</span>
-                          <span className="text-xs font-bold mt-2 text-orange-700 truncate w-full px-2 text-center">{leaderboardData[2].oyunAdi}</span>
+                        <div className="text-3xl md:text-4xl mb-2">{avatarListesi.find(a => a.id === leaderboardData[2].secilenAvatar)?.emoji || "🦉"}</div>
+                        <div className="w-24 md:w-28 h-24 md:h-28 bg-orange-50 rounded-t-xl flex flex-col items-center justify-start pt-4 border-t-4 border-orange-400 shadow-inner">
+                          <span className="text-xl md:text-2xl font-black text-orange-400">3</span>
+                          <span className="text-[10px] md:text-xs font-bold mt-2 text-orange-700 truncate w-full px-1 text-center">{leaderboardData[2].oyunAdi}</span>
                         </div>
                       </div>
                     )}
@@ -1069,17 +1082,17 @@ export default function Home() {
                     {leaderboardData.map((kisi, idx) => {
                       const isMe = user?.dbId === kisi.kullaniciAdi;
                       return (
-                        <div key={idx} className={`flex items-center justify-between p-4 px-8 border-b border-slate-100 transition-colors ${isMe ? "bg-blue-50" : "hover:bg-slate-50"}`}>
-                          <div className="flex items-center gap-6 cursor-default">
-                            <span className={`text-xl font-black w-6 text-center ${idx === 0 ? "text-amber-500" : idx === 1 ? "text-slate-400" : idx === 2 ? "text-orange-400" : "text-slate-300"}`}>{idx + 1}</span>
-                            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl">
+                        <div key={idx} className={`flex items-center justify-between p-3 md:p-4 px-4 md:px-8 border-b border-slate-100 transition-colors ${isMe ? "bg-blue-50" : "hover:bg-slate-50"}`}>
+                          <div className="flex items-center gap-3 md:gap-6 cursor-default">
+                            <span className={`text-base md:text-xl font-black w-6 text-center ${idx === 0 ? "text-amber-500" : idx === 1 ? "text-slate-400" : idx === 2 ? "text-orange-400" : "text-slate-300"}`}>{idx + 1}</span>
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-100 flex items-center justify-center text-xl md:text-2xl">
                               {avatarListesi.find(a => a.id === kisi.secilenAvatar)?.emoji || "🦉"}
                             </div>
-                            <span className={`font-bold text-lg ${isMe ? "text-blue-700" : "text-slate-700"}`}>
+                            <span className={`font-bold text-sm md:text-lg truncate max-w-[120px] sm:max-w-xs ${isMe ? "text-blue-700" : "text-slate-700"}`}>
                               {kisi.oyunAdi} {isMe && "(Sen)"}
                             </span>
                           </div>
-                          <div className="font-black text-slate-500 tracking-wide cursor-default">
+                          <div className="font-black text-slate-500 text-xs md:text-base tracking-wide cursor-default">
                             {kisi.gosterilecekSezonPuani || 0} XP
                           </div>
                         </div>
